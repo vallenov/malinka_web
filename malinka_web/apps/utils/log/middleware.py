@@ -9,7 +9,6 @@ from malinka_web.malinka_web.apps.common.serializers import (
     RequestSerializer,
     ResponseSerializer,
 )
-from malinka_web.malinka_web.apps.common.validators import validate_input_data
 
 _thread_local = threading.local()
 
