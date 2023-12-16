@@ -9,7 +9,6 @@ from malinka_web.malinka_web.apps.common.serializers import (
     RequestSerializer,
     ResponseSerializer,
 )
-from malinka_web.malinka_web.apps.common.validators import validate_input_data
 
 _thread_local = threading.local()
 
@@ -27,28 +26,22 @@ class LogRequestMiddleware:
 
     def __call__(self, request):
 
-        self._request_info = validate_input_data(
-            model=RequestSerializer,
-            data=dict(
-                url=urllib.parse.urljoin(
-                    f'{request.scheme}://{request.get_host()}',
-                    request.path
-                ),
-                method=f'{request.method}',
-                headers=request.headers,
-                cookies=request.COOKIES,
-                body=request.body.decode()
-            )
+        self._request_info = RequestSerializer(
+            url=urllib.parse.urljoin(
+                f'{request.scheme}://{request.get_host()}',
+                request.path
+            ),
+            method=f'{request.method}',
+            headers=request.headers,
+            cookies=request.COOKIES,
+            body=request.body.decode()
         )
         response = self.get_response(request)
-        resp = validate_input_data(
-            model=ResponseSerializer,
-            data=dict(
-                status_code=response.status_code,
-                status_text=getattr(response, 'status_text', ''),
-                data=getattr(response, 'data', {}),
-                headers=getattr(response, '_headers', {}),
-            )
+        resp = ResponseSerializer(
+            status_code=response.status_code,
+            status_text=getattr(response, 'status_text', ''),
+            data=getattr(response, 'data', {}),
+            headers=getattr(response, '_headers', {}),
         )
 
         log_request = getattr(request, 'log_request', True)
@@ -70,7 +63,7 @@ class LogRequestMiddleware:
             if log_request:
                 logger.info(
                     f'{self._request_info}. \n'
-                    f'Responsed with: {resp}'
+                    f'Response with: {resp}'
                 )
         return response
 
